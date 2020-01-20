@@ -9,21 +9,21 @@ class Entity:
     kierunek <== -1 w lewo i 1 w prawo
     velocity
     """
-    def __init__(self, x, y, kierunek, velocity):
+    def __init__(self, x, y, direction, velocity):
         self.x = x
         self.y = y
-        self.kierunek = kierunek
+        self.direction = direction
         self.velocity = velocity
 
     def draw(self, screen):
         pygame.draw.circle(screen, (0, 255, 0), [self.x, self.y], 10)
 
     def update(self, dTime):
-        if self.kierunek == 1:
+        if self.direction == 1:
             self.x += self.velocity*dTime
-        else:
+        elif self.direction == -1:
             self.x -= self.velocity*dTime
-
+    
 class Wave:
     radius = 2
     def __init__(self, x, y, velocity):
@@ -38,13 +38,16 @@ class Wave:
 
 class DopplerEffect:
     WHITE = (255, 255, 255)
-    cycle = 300 # how often emmit waves (in seconds) 
+    cycle = 1000 # how often emmit waves (in seconds/10) 
     waves = []
     lastWaveTime = pygame.time.get_ticks()
-
+    emitterDirect = -1
+    observDirect = 1
+    
+    
     def __init__(self):
-        self.zrodlo = Entity(500, 325, -1, 1)
-        #self.wave = Wave(self.zrodlo.x, self.zrodlo.y, 2)
+        self.reset()
+        #self.wave = Wave(self.emitter.x, self.emitter.y, 2)
     def render(self, screen):
         # Set the screen background
         #screen.fill(self.WHITE)
@@ -52,20 +55,35 @@ class DopplerEffect:
         for wave in self.waves:
             wave.draw(screen)
 
-        self.zrodlo.draw(screen)
+        self.emitter.draw(screen)
+        self.observer.draw(screen)
     def update(self, dTime):
         roundDeltaTime = math.ceil( dTime )
         
         # Create new wave around emitter
-        print("cycle: "+str(self.cycle))
-        print("dTIme: "+str(self.lastWaveTime))
         now = pygame.time.get_ticks()
         if now - self.lastWaveTime >= self.cycle:
-            newWave = Wave(self.zrodlo.x, self.zrodlo.y, 2)
+            newWave = Wave(self.emitter.x, self.emitter.y, 2)
             self.waves.append(newWave)
             self.lastWaveTime = now
         
         for wave in self.waves:
             wave.update(roundDeltaTime)
         
-        self.zrodlo.update(roundDeltaTime)
+        self.emitter.update(roundDeltaTime)
+        self.observer.update(roundDeltaTime)
+        
+    # set frequency given in herz
+    def setFrequency(self, frequency):
+        self.cycle = 1/frequency * 1000
+    
+    def setDirection(self, emitt, obsrv):
+        if emitt != None:
+            self.emitterDirect = emitt
+        if obsrv != None:
+            self.observDirect = obsrv
+         
+    def reset(self):
+        self.emitter = Entity(500, 325, self.emitterDirect, 1)
+        self.observer = Entity(100, 325, self.observDirect, 1)
+        self.waves = []

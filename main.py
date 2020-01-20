@@ -13,6 +13,8 @@ class Options:
 
 
 class OptionsUIApp:
+    animation = False
+
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("Options UI")
@@ -29,7 +31,6 @@ class OptionsUIApp:
                                        {'name': 'fira_code', 'point_size': 14, 'style': 'italic'},
                                        {'name': 'fira_code', 'point_size': 14, 'style': 'bold'}
                                        ])
-        self.animation = True
 
         self.recreate_ui()
 
@@ -83,10 +84,10 @@ class OptionsUIApp:
                                                 self.ui_manager)
 
 
-        self.emitter_label = UILabel(pygame.Rect((720, 210), (240, 25)), "Odbiorca", self.ui_manager)
+        self.observer_label = UILabel(pygame.Rect((720, 210), (240, 25)), "Odbiorca", self.ui_manager)
 
-        self.emitter_direction = UIDropDownMenu(['Lewa','Prawa'], # options
-                                                'Lewa', # preselected option
+        self.observer_direction = UIDropDownMenu(['Lewa','Prawa'], # options
+                                                'Prawa', # preselected option
                                                 pygame.Rect((720, 240), (240, 25)),
                                                 self.ui_manager)
 
@@ -104,17 +105,45 @@ class OptionsUIApp:
                         self.animation = True # START ANIMATION :)
                     elif event.ui_element == self.stop_button:
                         self.animation = False # STOP ANIMATION :(
+                    elif event.ui_element == self.restart_button: # RESET EVERYTING :O
+                         self.doppler_effect.reset() 
+                         self.window_surface.blit(self.background_surface, (0, 0)) # reset screen
                 """ CHANGING FREQUENCY ON SLIDER """
                 if self.frequency_slider.has_moved_recently:
                     # Set frequency value near the slider
-                    self.frequency_label_value.set_text(str(float(round(self.frequency_slider.get_current_value())))+" Hz")
+                    frequency_val = float(round(self.frequency_slider.get_current_value()))
+                    
+                    self.frequency_label_value.set_text(str(frequency_val)+" Hz")
+                    self.doppler_effect.setFrequency(frequency_val)
+                    self.doppler_effect.reset()
+                    self.window_surface.blit(self.background_surface, (0, 0)) # reset screen
+                if event.user_type == 'ui_drop_down_menu_changed':
 
-
+                    emittDir = None
+                    observDir = None
+                    if event.ui_element == self.emitter_direction:
+                        if self.emitter_direction.selected_option == "Lewa":
+                            emittDir = -1
+                        else:
+                            emittDir = 1
+                        #self.doppler_effect.setEntitiesDirections(emittDir, observDir)
+                    elif event.ui_element == self.observer_direction:
+                        if self.observer_direction.selected_option == "Lewa":
+                            observDir = -1
+                        else:
+                            observDir = 1
+                    #self.doppler_effect                                    
+                    self.doppler_effect.setDirection(emittDir, observDir)
+                    
+                    self.doppler_effect.reset() # reconctruct simulation again
+                    self.animation = False # turn off animation
+                    self.window_surface.blit(self.background_surface, (0, 0))
+                        
     def run(self):
         self.window_surface = pygame.display.set_mode(self.options.resolution)
         self.recreate_ui()
         
-        doppler_effect = DopplerEffect() 
+        self.doppler_effect = DopplerEffect() 
 
         while self.running:
             time_delta = self.clock.tick(60)/1000.0
@@ -130,10 +159,10 @@ class OptionsUIApp:
 
             if self.animation:
                 # Update objects
-                doppler_effect.update(1)
-
+                self.doppler_effect.update(1)
+            
             # Render current frame
-            doppler_effect.render(self.window_surface)
+            self.doppler_effect.render(self.window_surface)
 
             # draw graphics
             self.ui_manager.draw_ui(self.window_surface)
