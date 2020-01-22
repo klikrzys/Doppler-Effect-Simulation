@@ -22,6 +22,7 @@ class OptionsUIApp:
         self.window_surface = pygame.display.set_mode(self.options.resolution)
 
         self.background_surface = None
+        self.background_img = pygame.image.load("background.png")
 
         #self.ui_manager = UIManager(self.options.resolution, 'data/themes/theme_2.json')  # , 'data/themes/theme_2.json'
         self.ui_manager = UIManager(self.options.resolution)
@@ -31,6 +32,11 @@ class OptionsUIApp:
                                        {'name': 'fira_code', 'point_size': 14, 'style': 'italic'},
                                        {'name': 'fira_code', 'point_size': 14, 'style': 'bold'}
                                        ])
+        # Transparent background behind control GUI
+        self.background_ui = pygame.Surface((500,650), pygame.SRCALPHA)   # per-pixel alpha
+        self.background_ui.fill((255,255,255,128)) # notice the alpha value in the color        
+
+        self.doppler_effect = DopplerEffect()
 
         self.recreate_ui()
 
@@ -69,11 +75,11 @@ class OptionsUIApp:
         self.frequency_label = UILabel(pygame.Rect((720, 420), (240, 25)), "Czestotliwość", self.ui_manager)
 
         self.frequency_slider = UIHorizontalSlider(pygame.Rect((700, 460),(210, 25)),
-                                                1.0,
-                                                (1.0, 100.0),
+                                                10,
+                                                (5, 20.0),
                                                 self.ui_manager,
                                                 object_id='#frequency_slider')
-        self.frequency_label_value = UILabel(pygame.Rect((922, 460), (70, 25)), "100.0 Hz", self.ui_manager)
+        self.frequency_label_value = UILabel(pygame.Rect((922, 460), (70, 25)), "1.0 Hz", self.ui_manager)
 
 
         self.emitter_label = UILabel(pygame.Rect((720, 150), (240, 25)), "Źródło", self.ui_manager)
@@ -113,12 +119,11 @@ class OptionsUIApp:
                     # Set frequency value near the slider
                     frequency_val = float(round(self.frequency_slider.get_current_value()))
                     
-                    self.frequency_label_value.set_text(str(frequency_val)+" Hz")
-                    self.doppler_effect.setFrequency(frequency_val)
+                    self.frequency_label_value.set_text("{0:.1f}".format(frequency_val/10)+" Hz")
+                    self.doppler_effect.setFrequency(frequency_val/10)
                     self.doppler_effect.reset()
                     self.window_surface.blit(self.background_surface, (0, 0)) # reset screen
                 if event.user_type == 'ui_drop_down_menu_changed':
-
                     emittDir = None
                     observDir = None
                     if event.ui_element == self.emitter_direction:
@@ -143,8 +148,6 @@ class OptionsUIApp:
         self.window_surface = pygame.display.set_mode(self.options.resolution)
         self.recreate_ui()
         
-        self.doppler_effect = DopplerEffect() 
-
         while self.running:
             time_delta = self.clock.tick(60)/1000.0
 
@@ -154,8 +157,9 @@ class OptionsUIApp:
             # respond to input
             self.ui_manager.update(time_delta)
 
-            #Background
-            self.window_surface.blit(self.background_surface, (0, 0))
+            #Drawing main background
+            self.window_surface.blit(self.background_img, (0, 0))
+            #self.window_surface.blit(self.background_surface, (0, 0))
 
             if self.animation:
                 # Update objects
@@ -164,8 +168,11 @@ class OptionsUIApp:
             # Render current frame
             self.doppler_effect.render(self.window_surface)
 
-            # draw graphics
-            self.ui_manager.draw_ui(self.window_surface)
+
+
+            # draw graphical user interface
+            self.window_surface.blit(self.background_ui, (650,0)) # Background
+            self.ui_manager.draw_ui(self.window_surface) # Controls
 
 
             pygame.display.update()

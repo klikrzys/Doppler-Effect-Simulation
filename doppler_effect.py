@@ -75,6 +75,7 @@ class DopplerEffect:
         
     # set frequency given in herz
     def setFrequency(self, frequency):
+        #print("frequency: "+str(frequency))
         self.cycle = 1/frequency * 1000
     
     def setDirection(self, emitt, obsrv):
@@ -84,6 +85,9 @@ class DopplerEffect:
             self.observDirect = obsrv
          
     def reset(self):
+        # set starting coords by looking on choosen directions
+        #if 
+
         self.emitter = Entity(500, 325, self.emitterDirect, 1)
         self.observer = Entity(100, 325, self.observDirect, 1)
         self.waves = []
