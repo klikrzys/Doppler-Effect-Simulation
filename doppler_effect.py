@@ -86,8 +86,21 @@ class DopplerEffect:
          
     def reset(self):
         # set starting coords by looking on choosen directions
-        #if 
+        emittCoords = {'x': 500, 'y':300}
+        obsvCoords = {'x': 100, 'y':300}
+        
+        if self.emitterDirect == 1 and self.observDirect == 1: # Both going right
+            emittCoords['x'] = 270
+        elif self.emitterDirect == -1 and self.observDirect == -1: # Both going left
+            emittCoords['x'] = 900
+            obsvCoords['x'] = 650
+        elif self.emitterDirect == 1 and self.observDirect == -1: # Emitt right, observer left
+            emittCoords['x'] = 270
+            obsvCoords['x'] = 400
+        elif self.emitterDirect == -1 and self.observDirect == 1: # Emitt right, observer left
+            emittCoords['x'] = 500
+            obsvCoords['x'] = 100
 
-        self.emitter = Entity(500, 325, self.emitterDirect, 1)
-        self.observer = Entity(100, 325, self.observDirect, 1)
+        self.emitter = Entity(emittCoords['x'], emittCoords['y'], self.emitterDirect, 1)
+        self.observer = Entity(obsvCoords['x'], obsvCoords['y'], self.observDirect, 1)
         self.waves = []
