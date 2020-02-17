@@ -33,7 +33,7 @@ class OptionsUIApp:
                                        {'name': 'fira_code', 'point_size': 14, 'style': 'bold'}
                                        ])
         # Transparent background behind control GUI
-        self.background_ui = pygame.Surface((500,650), pygame.SRCALPHA)   # per-pixel alpha
+        self.background_ui = pygame.Surface((500,550), pygame.SRCALPHA)   # per-pixel alpha
         self.background_ui.fill((255,255,255,128)) # notice the alpha value in the color        
 
         self.doppler_effect = DopplerEffect()
