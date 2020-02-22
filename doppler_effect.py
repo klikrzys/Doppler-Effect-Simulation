@@ -1,4 +1,5 @@
-import math
+from math import sqrt
+from math import ceil
 import pygame
 
 """
@@ -48,7 +49,7 @@ class Wave:
         """Return wave id if its colliding, if not return False
         --> Checks if circle passed in arguments is colliding with this wave
         """
-        distBetween = math.sqrt( (self.x-position[0])**2 + (self.y-position[1])**2 )
+        distBetween = sqrt( (self.x-position[0])**2 + (self.y-position[1])**2 )
         if distBetween <= self.radius + radius and distBetween >= abs(self.radius - radius):
             return self.id
         else:
@@ -93,7 +94,6 @@ class FrequencyTimeline:
             isInRange = True
             i = 0
             while isInRange:
-                print(i)
                 if self.pointer[0] < self.blocksPositions[i] and self.pointer[0] + 250 > self.blocksPositions[i]:
                     del self.blocksPositions[i]
                 else:
@@ -138,7 +138,7 @@ class DopplerEffect:
         self.observer.draw(screen)
         self.frequencyMeter.draw(screen)
     def update(self, dTime):
-        roundDeltaTime = math.ceil( dTime )
+        roundDeltaTime = ceil( dTime )
         colission = False
 
         # Create new wave around emitter
@@ -149,15 +149,39 @@ class DopplerEffect:
             self.lastWaveTime = now
 
         colission = False
-        for wave in self.waves:
-            wave.update(roundDeltaTime)
-    
-            if colission == False: # search till collision with wave found
-                colission = wave.doesCollideWithCircle(self.observer.getPosition(), 5)
+        i = 0
+        foundValidWave = False
+        toRemove = []
+        for i in range(0, len(self.waves)):
+            wave = self.waves[i]
+            """Removing waves which went outside of screen
+            1. we make a circle which contains screen [Center: (500,325), radius: 526]
+            2. if wave is not colliding with this circle we remove it
+            """
+            if not foundValidWave:
+                distBetween = sqrt( (wave.x-500)**2 + (wave.y-325)**2 )
+                if distBetween <= abs(wave.radius - 526) and wave.radius > 526:
+                    toRemove.append(i) # delete wave which went out of screen
+                else:
+                    foundValidWave = True # If found valid one, there is no need to check no more!!!
+            if foundValidWave:
+                wave.update(roundDeltaTime)
+                if colission == False: # search till collision with wave found
+                    colission = wave.doesCollideWithCircle(self.observer.getPosition(), 5)
+        toRemove.sort()
+        i=0
+        for pos in toRemove:
+            del self.waves[pos-i]
+            i+=1
 
+        # If emitter or observer went out of border then stop animation
+
+
+        #Update entities
         self.emitter.update(roundDeltaTime)
         self.observer.update(roundDeltaTime)
         self.frequencyMeter.update(colission)
+
 
     # set frequency given in herz
     def setFrequency(self, frequency):
