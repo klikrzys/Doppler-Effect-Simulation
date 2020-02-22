@@ -75,21 +75,42 @@ class FrequencyTimeline:
         pygame.draw.rect(self.aplha_surface, self.BLUE, (0, 500, self.width, self.height), 10) 
         for blockPos in self.blocksPositions:
             pygame.draw.rect(screen, self.RED, (blockPos, 550, 5, self.height), 0)
-    
+
+        pygame.draw.circle(screen, self.RED, self.pointer, 7) # a little circle on the top of the pointer - for attention
         pygame.draw.line(screen, self.RED, self.pointer, self.bottomPointer(), 2)
     def update(self, collision):
-        self.pointer[0] += self.SPEED
-        if self.pointer[0] > self.width:
-            self.reset()
+        self.pointer[0] += self.SPEED # move pointer to the right~!
 
-        # If collision with new wave occurs, add block
+        # If pointer is beyond screen
+        if self.pointer[0] > self.width:
+            self.pointer[0] = 5 # go back to the start!
+
+        """If there is block in front of pointer
+         in range of 250px then  d e l e t e  i t!
+        """
+        blcksNum = len(self.blocksPositions)
+        if blcksNum > 0:
+            isInRange = True
+            i = 0
+            while isInRange:
+                print(i)
+                if self.pointer[0] < self.blocksPositions[i] and self.pointer[0] + 250 > self.blocksPositions[i]:
+                    del self.blocksPositions[i]
+                else:
+                    isInRange = False
+                if i+1 < blcksNum:
+                    i += 1
+
+        """Check if collision with some new
+        wave occured. If indeed, then add new block
+        """
         if collision != False:
             if self.lastCollidedWaveId != collision:
                 self.lastCollidedWaveId = collision
                 self.blocksPositions.append( self.pointer[0] )
     def reset(self):
         self.blocksPositions = []
-        self.pointer[0] = 5
+        
     def bottomPointer(self):
         return [ self.pointer[0], self.pointer[1]+self.height ]
 
