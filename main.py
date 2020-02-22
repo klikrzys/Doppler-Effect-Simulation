@@ -82,6 +82,13 @@ class OptionsUIApp:
         self.frequency_label_value = UILabel(pygame.Rect((922, 460), (70, 25)), "1.0 Hz", self.ui_manager)
 
 
+        self.speed_label = UILabel(pygame.Rect((720, 50), (240, 25)), "Szybkość ciał:", self.ui_manager)
+        self.entities_speed = UIDropDownMenu(['źródło szybsze','odbiorca szybszy', 'jest równa'], # options
+                                                'jest równa', # preselected option
+                                                pygame.Rect((720, 80), (240, 25)),
+                                                self.ui_manager)
+
+
         self.emitter_label = UILabel(pygame.Rect((720, 150), (240, 25)), "Źródło", self.ui_manager)
 
         self.emitter_direction = UIDropDownMenu(['Lewa','Prawa'], # options
@@ -137,11 +144,19 @@ class OptionsUIApp:
                             observDir = -1
                         else:
                             observDir = 1
-                    #self.doppler_effect                                    
-                    self.doppler_effect.setDirection(emittDir, observDir)
+                    elif event.ui_element == self.entities_speed:
+                        emittSpeed = 1
+                        observSpeed = 1
+                        if self.entities_speed.selected_option == "źródło szybsze":
+                            emittSpeed = 2
+                        elif self.entities_speed.selected_option == "odbiorca szybszy":
+                            observSpeed = 2
+                        self.doppler_effect.setSpeed(emittSpeed, observSpeed) # Set desired new entitie's speeds
                     
-                    self.doppler_effect.reset() # reconctruct simulation again
-                    self.animation = False # turn off animation
+                    self.doppler_effect.setDirection(emittDir, observDir) # Set desired new entitie's directions
+                    
+                    self.doppler_effect.reset() # reset 'the stage' :o
+                    self.animation = False # turn off animation (so its not annoying to user)
                     self.window_surface.blit(self.background_surface, (0, 0))
                         
     def run(self):
@@ -174,8 +189,9 @@ class OptionsUIApp:
             self.window_surface.blit(self.background_ui, (650,0)) # Background
             self.ui_manager.draw_ui(self.window_surface) # Controls
 
+            pygame.display.flip()
 
-            pygame.display.update()
+            self.clock.tick(60)
 
 
 if __name__ == '__main__':

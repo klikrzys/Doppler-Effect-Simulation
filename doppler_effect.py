@@ -68,7 +68,7 @@ class FrequencyTimeline:
     def __init__(self):
         size = (1000, 150)
         self.aplha_surface = pygame.Surface(size, pygame.SRCALPHA)
-        self.aplha_surface.fill((76, 80, 82, 90))
+        self.aplha_surface.fill((76, 80, 82, 150))
         
     def draw(self, screen):
         screen.blit(self.aplha_surface, (0, 550))
@@ -100,6 +100,10 @@ class DopplerEffect:
     lastWaveTime = pygame.time.get_ticks()
     emitterDirect = -1
     observDirect = 1
+    
+    emitterSpeed = 1
+    observSpeed = 1
+
     
     def __init__(self):
         self.frequencyMeter = FrequencyTimeline()
@@ -143,6 +147,10 @@ class DopplerEffect:
             self.emitterDirect = emitt
         if obsrv != None:
             self.observDirect = obsrv
+
+    def setSpeed(self, emitt, obsrv):
+        self.emitterSpeed = emitt
+        self.observSpeed = obsrv
          
     def reset(self):
         # set starting coords by looking on choosen directions
@@ -165,10 +173,10 @@ class DopplerEffect:
             obsvCoords['x'] = 100
 
         # Object which is emitting sound
-        self.emitter = Entity(emittCoords['x'], emittCoords['y'], self.emitterDirect, 1)
+        self.emitter = Entity(emittCoords['x'], emittCoords['y'], self.emitterDirect, self.emitterSpeed)
         
         # Observer, which receives sound
-        self.observer = Entity(obsvCoords['x'], obsvCoords['y'], self.observDirect, 1)
+        self.observer = Entity(obsvCoords['x'], obsvCoords['y'], self.observDirect, self.observSpeed)
         
         # Clear waves array and timeline with sound receiving
         self.waves = []
