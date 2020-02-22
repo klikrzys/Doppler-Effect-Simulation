@@ -1,6 +1,10 @@
 import math
 import pygame
 
+"""
+Just a dot moving left or right
+depending on given settings
+"""
 class Entity:
     """
     x, y
@@ -24,20 +28,28 @@ class Entity:
     def getPosition(self):
         return [self.x, self.y]
 
+"""
+This is object representing sound wave
+ which spreads around 'emitter'
+"""
 class Wave:
     radius = 2
-    def __init__(self, x, y, velocity, ID):
+    velocity = 3 # Speed of wave
+    def __init__(self, x, y, ID):
         self.x = x
         self.y = y
-        self.velocity = velocity
-        self.id = ID
+        self.id = ID # object identificator
     def draw(self, screen):
         pygame.draw.circle(screen, (0, 0, 255), [self.x, self.y], self.radius, 1)
     def update(self, dTime):
         self.radius += self.velocity*dTime
-    def doesCollideWithCircle(self, point, ptRadius):
-        distBetween = math.sqrt( (self.x-point[0])**2 + (self.y-point[1])**2 )
-        if distBetween <= self.radius + ptRadius and distBetween >= abs(self.radius - ptRadius):
+
+    def doesCollideWithCircle(self, position, radius):
+        """Return wave id if its colliding, if not return False
+        --> Checks if circle passed in arguments is colliding with this wave
+        """
+        distBetween = math.sqrt( (self.x-position[0])**2 + (self.y-position[1])**2 )
+        if distBetween <= self.radius + radius and distBetween >= abs(self.radius - radius):
             return self.id
         else:
             return False
@@ -107,7 +119,7 @@ class DopplerEffect:
         # Create new wave around emitter
         now = pygame.time.get_ticks()
         if now - self.lastWaveTime >= self.cycle:
-            newWave = Wave(self.emitter.x, self.emitter.y, 3, len(self.waves)+1)
+            newWave = Wave(self.emitter.x, self.emitter.y, len(self.waves)+1)
             self.waves.append(newWave)
             self.lastWaveTime = now
 
@@ -117,7 +129,6 @@ class DopplerEffect:
     
             if colission == False: # search till collision with wave found
                 colission = wave.doesCollideWithCircle(self.observer.getPosition(), 5)
-            print(colission)
 
         self.emitter.update(roundDeltaTime)
         self.observer.update(roundDeltaTime)
@@ -125,7 +136,6 @@ class DopplerEffect:
 
     # set frequency given in herz
     def setFrequency(self, frequency):
-        #print("frequency: "+str(frequency))
         self.cycle = 1/frequency * 1000
     
     def setDirection(self, emitt, obsrv):
@@ -139,19 +149,27 @@ class DopplerEffect:
         emittCoords = {'x': 500, 'y':300}
         obsvCoords = {'x': 100, 'y':300}
         
+
+        """Depending on direction settings
+         we change starting position of emitter and observer""" 
         if self.emitterDirect == 1 and self.observDirect == 1: # Both going right
             emittCoords['x'] = 270
         elif self.emitterDirect == -1 and self.observDirect == -1: # Both going left
             emittCoords['x'] = 900
             obsvCoords['x'] = 650
-        elif self.emitterDirect == 1 and self.observDirect == -1: # Emitt right, observer left
+        elif self.emitterDirect == 1 and self.observDirect == -1: # Emitter right, observer left
             emittCoords['x'] = 270
             obsvCoords['x'] = 400
-        elif self.emitterDirect == -1 and self.observDirect == 1: # Emitt right, observer left
+        elif self.emitterDirect == -1 and self.observDirect == 1: # Emitter right, observer left
             emittCoords['x'] = 500
             obsvCoords['x'] = 100
 
+        # Object which is emitting sound
         self.emitter = Entity(emittCoords['x'], emittCoords['y'], self.emitterDirect, 1)
+        
+        # Observer, which receives sound
         self.observer = Entity(obsvCoords['x'], obsvCoords['y'], self.observDirect, 1)
+        
+        # Clear waves array and timeline with sound receiving
         self.waves = []
         self.frequencyMeter.reset()
