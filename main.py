@@ -13,7 +13,6 @@ class Options:
 
 
 class OptionsUIApp:
-    animation = False
 
     def __init__(self):
         pygame.init()
@@ -55,11 +54,6 @@ class OptionsUIApp:
         self.start_button = UIButton(pygame.Rect((720, 325), (100, 40)),
                                     'START',
                                     self.ui_manager,
-                                    tool_tip_text="<font face=fira_code color=normal_text size=2>"
-                                                  "<b><u>Uruchom animacje</u></b>"
-                                                  "<br>"
-                                                  "Po zmianie konfiguracji włącza na nowo"
-                                                  "</font>",
                                     object_id='#start_button')
         
         self.stop_button = UIButton(pygame.Rect((850, 325), (100, 40)),
@@ -115,9 +109,9 @@ class OptionsUIApp:
                 """ BUTTONS """
                 if event.user_type == 'ui_button_pressed':
                     if event.ui_element == self.start_button:
-                        self.animation = True # START ANIMATION :)
+                        self.doppler_effect.start() # START ANIMATION :)
                     elif event.ui_element == self.stop_button:
-                        self.animation = False # STOP ANIMATION :(
+                        self.doppler_effect.stop() # STOP ANIMATION :(
                     elif event.ui_element == self.restart_button: # RESET EVERYTING :O
                          self.doppler_effect.reset() 
                          self.window_surface.blit(self.background_surface, (0, 0)) # reset screen
@@ -156,7 +150,7 @@ class OptionsUIApp:
                     self.doppler_effect.setDirection(emittDir, observDir) # Set desired new entitie's directions
                     
                     self.doppler_effect.reset() # reset 'the stage' :o
-                    self.animation = False # turn off animation (so its not annoying to user)
+                    self.doppler_effect.stop()
                     self.window_surface.blit(self.background_surface, (0, 0))
                         
     def run(self):
@@ -176,9 +170,9 @@ class OptionsUIApp:
             self.window_surface.blit(self.background_img, (0, 0))
             #self.window_surface.blit(self.background_surface, (0, 0))
 
-            if self.animation:
-                # Update objects
-                self.doppler_effect.update(1)
+            
+            # Update simulation
+            self.doppler_effect.update(1)
             
             # Render current frame
             self.doppler_effect.render(self.window_surface)

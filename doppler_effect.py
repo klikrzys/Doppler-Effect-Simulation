@@ -28,6 +28,10 @@ class Entity:
             self.x -= self.velocity*dTime
     def getPosition(self):
         return [self.x, self.y]
+    def isOutsideScreen(self):
+        if self.x < 0 or self.x > 1000:
+            return True
+        return False
 
 """
 This is object representing sound wave
@@ -62,7 +66,7 @@ class FrequencyTimeline:
     SPEED = 2
     height = 100
     width = 1000
-    lastCollidedWaveId = False
+    lastCollision = False
 
     blocksPositions = [] # List containing x positions of timeline blocks
     
@@ -96,6 +100,7 @@ class FrequencyTimeline:
             while isInRange:
                 if self.pointer[0] < self.blocksPositions[i] and self.pointer[0] + 250 > self.blocksPositions[i]:
                     del self.blocksPositions[i]
+                    i = 0
                 else:
                     isInRange = False
                 if i+1 < blcksNum:
@@ -105,11 +110,15 @@ class FrequencyTimeline:
         wave occured. If indeed, then add new block
         """
         if collision != False:
-            if self.lastCollidedWaveId != collision:
-                self.lastCollidedWaveId = collision
+            if self.lastCollision != collision:
+                self.lastCollision = collision
                 self.blocksPositions.append( self.pointer[0] )
+        else:
+            self.lastCollision = collision
+
     def reset(self):
         self.blocksPositions = []
+        self.pointer[0] = 5 # go back to the start!
         
     def bottomPointer(self):
         return [ self.pointer[0], self.pointer[1]+self.height ]
@@ -125,6 +134,7 @@ class DopplerEffect:
     emitterSpeed = 1
     observSpeed = 1
 
+    animation = False
     
     def __init__(self):
         self.frequencyMeter = FrequencyTimeline()
@@ -138,50 +148,52 @@ class DopplerEffect:
         self.observer.draw(screen)
         self.frequencyMeter.draw(screen)
     def update(self, dTime):
-        roundDeltaTime = ceil( dTime )
-        colission = False
+        if self.animation:
+            roundDeltaTime = ceil( dTime )
+            colission = False
 
-        # Create new wave around emitter
-        now = pygame.time.get_ticks()
-        if now - self.lastWaveTime >= self.cycle:
-            newWave = Wave(self.emitter.x, self.emitter.y, len(self.waves)+1)
-            self.waves.append(newWave)
-            self.lastWaveTime = now
+            # Create new wave around emitter
+            now = pygame.time.get_ticks()
+            if now - self.lastWaveTime >= self.cycle:
+                newWave = Wave(self.emitter.x, self.emitter.y, len(self.waves)+1)
+                self.waves.append(newWave)
+                self.lastWaveTime = now
 
-        colission = False
-        i = 0
-        foundValidWave = False
-        toRemove = []
-        for i in range(0, len(self.waves)):
-            wave = self.waves[i]
-            """Removing waves which went outside of screen
-            1. we make a circle which contains screen [Center: (500,325), radius: 526]
-            2. if wave is not colliding with this circle we remove it
-            """
-            if not foundValidWave:
-                distBetween = sqrt( (wave.x-500)**2 + (wave.y-325)**2 )
-                if distBetween <= abs(wave.radius - 526) and wave.radius > 526:
-                    toRemove.append(i) # delete wave which went out of screen
-                else:
-                    foundValidWave = True # If found valid one, there is no need to check no more!!!
-            if foundValidWave:
-                wave.update(roundDeltaTime)
-                if colission == False: # search till collision with wave found
-                    colission = wave.doesCollideWithCircle(self.observer.getPosition(), 5)
-        toRemove.sort()
-        i=0
-        for pos in toRemove:
-            del self.waves[pos-i]
-            i+=1
+            colission = False
+            i = 0
+            foundValidWave = False
+            toRemove = []
+            for i in range(0, len(self.waves)):
+                wave = self.waves[i]
+                """Removing waves which went outside of screen
+                1. we make a circle which contains screen [Center: (500,325), radius: 526]
+                2. if wave is not colliding with this circle we remove it
+                """
+                if not foundValidWave:
+                    distBetween = sqrt( (wave.x-500)**2 + (wave.y-325)**2 )
+                    if distBetween <= abs(wave.radius - 526) and wave.radius > 526:
+                        toRemove.append(i) # delete wave which went out of screen
+                    else:
+                        foundValidWave = True # If found valid one, there is no need to check no more!!!
+                if foundValidWave:
+                    wave.update(roundDeltaTime)
+                    if colission == False: # search till collision with wave found
+                        colission = wave.doesCollideWithCircle(self.observer.getPosition(), 5)
+            toRemove.sort()
+            i=0
+            for pos in toRemove:
+                del self.waves[pos-i]
+                i+=1
 
-        # If emitter or observer went out of border then stop animation
+            # If emitter or observer went out of border then reset and stop animation
+            if self.emitter.isOutsideScreen() and self.observer.isOutsideScreen():
+                self.reset()
+                self.stop() 
 
-
-        #Update entities
-        self.emitter.update(roundDeltaTime)
-        self.observer.update(roundDeltaTime)
-        self.frequencyMeter.update(colission)
-
+            #Update entities
+            self.emitter.update(roundDeltaTime)
+            self.observer.update(roundDeltaTime)
+            self.frequencyMeter.update(colission)
 
     # set frequency given in herz
     def setFrequency(self, frequency):
@@ -196,7 +208,12 @@ class DopplerEffect:
     def setSpeed(self, emitt, obsrv):
         self.emitterSpeed = emitt
         self.observSpeed = obsrv
-         
+    
+    def start(self):
+        self.animation = True
+    def stop(self):
+        self.animation = False
+
     def reset(self):
         # set starting coords by looking on choosen directions
         emittCoords = {'x': 500, 'y':300}
