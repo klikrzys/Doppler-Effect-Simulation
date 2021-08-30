@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/krzyniu/Downloads/efekt_dopplera/env"
+VIRTUAL_ENV="/home/krzyniu/Projects/efekt_dopplera/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
