@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import pygame
 
 from pygame_gui.ui_manager import UIManager
@@ -5,7 +8,7 @@ from pygame_gui.elements.ui_button import UIButton
 from pygame_gui.elements.ui_horizontal_slider import UIHorizontalSlider
 from pygame_gui.elements.ui_drop_down_menu import UIDropDownMenu
 from pygame_gui.elements.ui_label import UILabel
-from doppler_effect import DopplerEffect 
+from doppler_effect import DopplerEffect
 
 class Options:
     def __init__(self):
@@ -33,7 +36,7 @@ class OptionsUIApp:
                                        ])
         # Transparent background behind control GUI
         self.background_ui = pygame.Surface((500,550), pygame.SRCALPHA)   # per-pixel alpha
-        self.background_ui.fill((255,255,255,128)) # notice the alpha value in the color        
+        self.background_ui.fill((255,255,255,128)) # notice the alpha value in the color
 
         self.doppler_effect = DopplerEffect()
 
@@ -50,12 +53,12 @@ class OptionsUIApp:
 
         self.background_surface = pygame.Surface(self.options.resolution)
         self.background_surface.fill(self.ui_manager.get_theme().get_colour(None, None, 'dark_bg'))
-        
+
         self.start_button = UIButton(pygame.Rect((720, 325), (100, 40)),
                                     'START',
                                     self.ui_manager,
                                     object_id='#start_button')
-        
+
         self.stop_button = UIButton(pygame.Rect((850, 325), (100, 40)),
                                                 'STOP',
                                                 self.ui_manager,
@@ -113,13 +116,13 @@ class OptionsUIApp:
                     elif event.ui_element == self.stop_button:
                         self.doppler_effect.stop() # STOP ANIMATION :(
                     elif event.ui_element == self.restart_button: # RESET EVERYTING :O
-                         self.doppler_effect.reset() 
+                         self.doppler_effect.reset()
                          self.window_surface.blit(self.background_surface, (0, 0)) # reset screen
                 """ CHANGING FREQUENCY ON SLIDER """
                 if self.frequency_slider.has_moved_recently:
                     # Set frequency value near the slider
                     frequency_val = float(round(self.frequency_slider.get_current_value()))
-                    
+
                     self.frequency_label_value.set_text("{0:.1f}".format(frequency_val/10)+" Hz")
                     self.doppler_effect.setFrequency(frequency_val/10)
                     self.doppler_effect.reset()
@@ -146,19 +149,19 @@ class OptionsUIApp:
                         elif self.entities_speed.selected_option == "odbiorca szybszy":
                             observSpeed = 2
                         self.doppler_effect.setSpeed(emittSpeed, observSpeed) # Set desired new entitie's speeds
-                    
+
                     self.doppler_effect.setDirection(emittDir, observDir) # Set desired new entitie's directions
-                    
+
                     self.doppler_effect.reset() # reset 'the stage' :o
                     self.doppler_effect.stop()
                     self.window_surface.blit(self.background_surface, (0, 0))
-                        
+
     def run(self):
         self.window_surface = pygame.display.set_mode(self.options.resolution)
         self.recreate_ui()
-        
+
         while self.running:
-            time_delta = self.clock.tick(60)/1000.0
+            time_delta = self.clock.tick(180)/1000.0
 
             # check for input
             self.process_events()
@@ -170,14 +173,12 @@ class OptionsUIApp:
             self.window_surface.blit(self.background_img, (0, 0))
             #self.window_surface.blit(self.background_surface, (0, 0))
 
-            
+
             # Update simulation
             self.doppler_effect.update(1)
-            
+
             # Render current frame
             self.doppler_effect.render(self.window_surface)
-
-
 
             # draw graphical user interface
             self.window_surface.blit(self.background_ui, (650,0)) # Background

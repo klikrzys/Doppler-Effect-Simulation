@@ -44,8 +44,10 @@ class Wave:
         self.x = x
         self.y = y
         self.id = ID # object identificator
+
     def draw(self, screen):
         pygame.draw.circle(screen, (0, 0, 255), [self.x, self.y], self.radius, 1)
+
     def update(self, dTime):
         self.radius += self.velocity*dTime
 
@@ -69,15 +71,15 @@ class FrequencyTimeline:
     lastCollision = False
 
     blocksPositions = [] # List containing x positions of timeline blocks
-    
+
     def __init__(self):
         size = (1000, 150)
         self.aplha_surface = pygame.Surface(size, pygame.SRCALPHA)
         self.aplha_surface.fill((76, 80, 82, 150))
-        
+
     def draw(self, screen):
         screen.blit(self.aplha_surface, (0, 550))
-        pygame.draw.rect(self.aplha_surface, self.BLUE, (0, 500, self.width, self.height), 10) 
+        pygame.draw.rect(self.aplha_surface, self.BLUE, (0, 500, self.width, self.height), 10)
         for blockPos in self.blocksPositions:
             pygame.draw.rect(screen, self.RED, (blockPos, 550, 5, self.height), 0)
 
@@ -94,7 +96,7 @@ class FrequencyTimeline:
          in range of 250px then  d e l e t e  i t!
         """
         blcksNum = len(self.blocksPositions)
-        if blcksNum > 0:
+        if blcksNum > 2:
             isInRange = True
             i = 0
             while isInRange:
@@ -119,7 +121,7 @@ class FrequencyTimeline:
     def reset(self):
         self.blocksPositions = []
         self.pointer[0] = 5 # go back to the start!
-        
+
     def bottomPointer(self):
         return [ self.pointer[0], self.pointer[1]+self.height ]
 
@@ -130,12 +132,12 @@ class DopplerEffect:
     lastWaveTime = pygame.time.get_ticks()
     emitterDirect = -1
     observDirect = 1
-    
+
     emitterSpeed = 1
     observSpeed = 1
 
     animation = False
-    
+
     def __init__(self):
         self.frequencyMeter = FrequencyTimeline()
         self.reset()
@@ -186,9 +188,9 @@ class DopplerEffect:
                 i+=1
 
             # If emitter or observer went out of border then reset and stop animation
-            if self.emitter.isOutsideScreen() and self.observer.isOutsideScreen():
+            if self.emitter.isOutsideScreen() or self.observer.isOutsideScreen():
                 self.reset()
-                self.stop() 
+                self.stop()
 
             #Update entities
             self.emitter.update(roundDeltaTime)
@@ -198,7 +200,7 @@ class DopplerEffect:
     # set frequency given in herz
     def setFrequency(self, frequency):
         self.cycle = 1/frequency * 1000
-    
+
     def setDirection(self, emitt, obsrv):
         if emitt != None:
             self.emitterDirect = emitt
@@ -208,7 +210,7 @@ class DopplerEffect:
     def setSpeed(self, emitt, obsrv):
         self.emitterSpeed = emitt
         self.observSpeed = obsrv
-    
+
     def start(self):
         self.animation = True
     def stop(self):
@@ -218,10 +220,10 @@ class DopplerEffect:
         # set starting coords by looking on choosen directions
         emittCoords = {'x': 500, 'y':300}
         obsvCoords = {'x': 100, 'y':300}
-        
+
 
         """Depending on direction settings
-         we change starting position of emitter and observer""" 
+         we change starting position of emitter and observer"""
         if self.emitterDirect == 1 and self.observDirect == 1: # Both going right
             emittCoords['x'] = 270
         elif self.emitterDirect == -1 and self.observDirect == -1: # Both going left
@@ -236,10 +238,10 @@ class DopplerEffect:
 
         # Object which is emitting sound
         self.emitter = Entity(emittCoords['x'], emittCoords['y'], self.emitterDirect, self.emitterSpeed)
-        
+
         # Observer, which receives sound
         self.observer = Entity(obsvCoords['x'], obsvCoords['y'], self.observDirect, self.observSpeed)
-        
+
         # Clear waves array and timeline with sound receiving
         self.waves = []
         self.frequencyMeter.reset()
